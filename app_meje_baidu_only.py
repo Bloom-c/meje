@@ -960,82 +960,11 @@ with tab_company:
     </div>
     """, unsafe_allow_html=True)
     
-    if 'suggest_list' not in st.session_state:
-        st.session_state.suggest_list = []
-    if 'selected_company' not in st.session_state:
-        st.session_state.selected_company = ""
-    
-    col_input, col_btn = st.columns([3, 1])
-    with col_input:
-        company_input = st.text_input(
-            "企业名称",
-            placeholder="例如：字节、宁德、比亚迪",
-            key="company_input",
-            value=st.session_state.selected_company
-        )
-    with col_btn:
-        st.write("")
-        if st.button("🔍 搜索联想", use_container_width=True, key="search_suggest_btn"):
-            if company_input and len(company_input.strip()) >= 1:
-                with st.spinner("🔍 搜索中..."):
-                    try:
-                        url = "https://qianfan.baidu.com/v2/ai_search/web_search"
-                        headers = {
-                            "Authorization": f"Bearer {BAIDU_API_KEY}",
-                            "Content-Type": "application/json"
-                        }
-                        data = {
-                            "messages": [{"role": "user", "content": f"{company_input} 公司"}],
-                            "search_source": "baidu_search_v2",
-                            "num": 10
-                        }
-                        response = requests.post(url, headers=headers, json=data, timeout=15)
-                        if response.status_code == 200:
-                            result = response.json()
-                            web_pages = result.get("web_pages", []) or result.get("search_results", [])
-                            suggestions = []
-                            seen = set()
-                            for item in web_pages:
-                                title = item.get("title", "")
-                                snippet = item.get("body", "") or item.get("snippet", "")
-                                name = extract_company_name(title, snippet)
-                                if name and len(name) > 2 and len(name) < 50 and name not in seen:
-                                    seen.add(name)
-                                    suggestions.append({
-                                        "name": name,
-                                        "title": title[:60],
-                                        "snippet": snippet[:80]
-                                    })
-                            st.session_state.suggest_list = suggestions[:10]
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"搜索失败: {str(e)}")
-            else:
-                st.warning("请先输入关键词")
-    
-    if st.session_state.suggest_list:
-        st.markdown("##### 💡 搜索结果 — 点击企业名称自动填入")
-        
-        for idx, item in enumerate(st.session_state.suggest_list):
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.markdown(f"""
-                <div class="suggestion-item">
-                    <div>
-                        <strong style="color:#1a2332;">🏢 {item['name']}</strong>
-                        <span style="color:#7c8ba0;font-size:13px;margin-left:8px;">{item.get('snippet', '')[:50]}...</span>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            with col2:
-                if st.button("✅ 选择", key=f"select_{idx}", use_container_width=True):
-                    st.session_state.selected_company = item['name']
-                    st.session_state.suggest_list = []
-                    st.rerun()
-        
-        if st.button("❌ 清除结果", use_container_width=True, key="clear_suggest"):
-            st.session_state.suggest_list = []
-            st.rerun()
+    company_input = st.text_input(
+        "企业名称",
+        placeholder="例如：字节跳动、宁德时代、比亚迪、深信服",
+        key="company_input"
+    )
     
     if st.button("📊 开始分析", use_container_width=True, type="primary"):
         if not company_input:
