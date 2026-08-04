@@ -364,8 +364,9 @@ st.markdown("""
 # ============================================================
 # ===== 配置 =====
 # ============================================================
-DEEPSEEK_API_KEY = "DEEPSEEK_API_KEY"
-BAIDU_API_KEY = "BAIDU_API_KEY"
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+BAIDU_API_KEY = os.getenv("BAIDU_API_KEY")
+
 
 client = OpenAI(
     api_key=DEEPSEEK_API_KEY,
