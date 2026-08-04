@@ -684,6 +684,10 @@ def run_monitor(monitor_config):
 # ===== 主界面 =====
 # ============================================================
 
+# ===== 初始化 session_state =====
+if 'main_input' not in st.session_state:
+    st.session_state.main_input = ""
+
 st.markdown("""
 <div class="navbar">
     <div class="nav-brand">
@@ -855,15 +859,12 @@ with tab_main:
                     
                     if st.button("📥 一键填入输入框", key="fill_need_btn", use_container_width=True):
                         st.session_state.main_input = generated_text
-                        st.success("✅ 已填入输入框，请查看上方「描述你的需求」区域")
+                        st.rerun()
                         
                 except Exception as e:
                     st.error(f"生成失败: {str(e)}")
     
     # ===== 需求输入框 =====
-    if 'main_input' not in st.session_state:
-        st.session_state.main_input = ""
-    
     need_description = st.text_area(
         "📝 描述你的需求",
         height=100,
@@ -926,39 +927,6 @@ with tab_main:
                 
                 csv = result_df.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 下载结果 (CSV)", data=csv, file_name=f"觅镜_发现结果_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv", use_container_width=True)
-
-# ============================================================
-# TAB 2: 企业深度分析
-# ============================================================
-with tab_company:
-    st.markdown("""
-    <div class="card-glass">
-        <div class="card-title">🏢 企业深度分析</div>
-        <p style="color:#7c8ba0;margin:0;">输入企业名称，AI 自动分析其运营方向、合作机会和人才需求</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    company_input = st.text_input(
-        "企业名称",
-        placeholder="例如：字节跳动、宁德时代、比亚迪、深信服",
-        key="company_input"
-    )
-    
-    if st.button("📊 开始分析", use_container_width=True, type="primary"):
-        if not company_input:
-            st.error("⚠️ 请输入企业名称")
-        else:
-            with st.spinner(f"🔍 正在深度分析 {company_input}..."):
-                result = analyze_company(company_input)
-                st.markdown("---")
-                st.markdown(f"### 🏢 {company_input} 深度分析报告")
-                st.markdown("---")
-                st.markdown(result)
-                st.markdown("---")
-                st.caption("📌 基于公开信息 · 仅供参考 · 数据来源：SerpApi百度搜索")
-                
-                report = f"===== 觅镜 · {company_input} 深度分析报告 =====\n生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n{result}\n\n===== 数据来源 =====\nSerpApi百度搜索"
-                st.download_button("📥 下载报告 (TXT)", data=report.encode('utf-8'), file_name=f"{company_input}_分析报告.txt", mime="text/plain", use_container_width=True)
 
 # ============================================================
 # TAB 3: 持续监控
