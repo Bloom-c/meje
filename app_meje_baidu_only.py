@@ -5,6 +5,7 @@ from openai import OpenAI
 import pandas as pd
 import time
 import re
+import ast
 import os
 from datetime import datetime
 import hashlib
@@ -26,8 +27,11 @@ SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 
 if not DEEPSEEK_API_KEY:
     st.error("⚠️ 请配置 DEEPSEEK_API_KEY")
+    st.stop()
+
 if not SERPAPI_KEY:
     st.error("⚠️ 请配置 SERPAPI_KEY")
+    st.stop()
 
 client = OpenAI(
     api_key=DEEPSEEK_API_KEY,
@@ -52,6 +56,20 @@ def is_similar(name1, name2, threshold=0.8):
         return True
     return SequenceMatcher(None, name1, name2).ratio() >= threshold
 
+
+def safe_json_parse(text):
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if not match:
+        return None
+    raw = match.group()
+    try:
+        return json.loads(raw)
+    except:
+        try:
+            return ast.literal_eval(raw)
+        except:
+            return None
+
 def parse_user_need(need_description, mode="销售"):
     mode_prompt = "重点关注：目标客户行业、规模、决策者、采购信号" if mode == "销售" else "重点关注：目标公司行业、规模、技术栈、文化氛围"
     prompt = f"""
@@ -70,9 +88,9 @@ def parse_user_need(need_description, mode="销售"):
             max_tokens=500
         )
         result = response.choices[0].message.content
-        json_match = re.search(r'\{.*\}', result, re.DOTALL)
-        if json_match:
-            return json.loads(json_match.group())
+        parsed = safe_json_parse(result)
+        if parsed:
+            return parsed
         return {"industry": "科技", "keywords": [], "search_terms": []}
     except:
         return {"industry": "科技", "keywords": [], "search_terms": []}
@@ -86,6 +104,9 @@ def extract_company_name(title, snippet):
         match = re.search(pattern, title)
         if match:
             name = re.sub(r'^[0-9、.()（）：:]+', '', match.group(1).strip())
+            bad_words = ["发布", "招聘", "新闻", "官网", "解决方案", "排名", "介绍"]
+            if any(word in name for word in bad_words):
+                return None
             if 2 < len(name) < 30:
                 return name
     if len(title) > 3:
@@ -114,7 +135,7 @@ def search_from_serpapi(search_terms, industry, limit=10):
             params = {
                 "q": search_term,
                 "api_key": SERPAPI_KEY,
-                "source": "baidu",
+                "engine": "baidu",
                 "num": limit
             }
             
@@ -162,7 +183,7 @@ def get_company_details(company_name, mode="销售"):
         params = {
             "q": f"{company_name} 公司 简介 融资 招聘 创始人",
             "api_key": SERPAPI_KEY,
-            "source": "baidu",
+            "engine": "baidu",
             "num": 15
         }
         
@@ -204,8 +225,8 @@ def score_company(company_name, need_analysis, company_details, mode="销售"):
     try:
         resp = client.chat.completions.create(model="deepseek-chat", messages=[{"role": "system", "content": "你是专业评估专家。"}, {"role": "user", "content": prompt}], temperature=0.3, max_tokens=600)
         result = resp.choices[0].message.content
-        jm = re.search(r'\{.*\}', result, re.DOTALL)
-        return json.loads(jm.group()) if jm else {"total_score": 50, "priority": "中", "reason": "分析完成"}
+        parsed = safe_json_parse(result)
+        return parsed if parsed else {"total_score": 50, "priority": "中", "reason": "分析完成"}
     except:
         return {"total_score": 50, "priority": "中", "reason": "分析中"}
 
@@ -345,6 +366,12 @@ def run_monitor(monitor_config):
 # ===== 初始化 session_state =====
 if 'need_input' not in st.session_state:
     st.session_state.need_input = ""
+
+if 'generated_need' not in st.session_state:
+    st.session_state.generated_need = ""
+
+def fill_need_input():
+    st.session_state.need_input = st.session_state.generated_need
 
 # ---------- 简单CSS ----------
 st.markdown("""
@@ -506,9 +533,13 @@ with tab_main:
                     st.markdown("##### ✅ 生成结果：")
                     st.info(generated_text)
                     
-                    if st.button("📥 填入输入框", use_container_width=True, key="fill_btn"):
-                        st.session_state.need_input = generated_text
-                        st.success("✅ 已填入输入框！")
+                    st.session_state.generated_need = generated_text
+                    st.button(
+                        "📥 填入输入框",
+                        use_container_width=True,
+                        key="fill_btn",
+                        on_click=fill_need_input
+                    )
                         
                 except Exception as e:
                     st.error(f"生成失败: {str(e)}")
