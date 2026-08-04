@@ -888,12 +888,17 @@ with tab_main:
     if 'main_input' not in st.session_state:
         st.session_state.main_input = ""
     
-    need_description = st.text_area(
-        "📝 描述你的需求",
-        height=100,
-        placeholder="示例（销售模式）：我销售AI客服系统，目标客户是电商和零售公司，有客服团队，最近有融资或扩张计划。",
-        key="main_input"
-    )
+    # 使用一个额外的 session_state 来保持填入的内容
+if 'main_input' not in st.session_state:
+    st.session_state.main_input = ""
+
+need_description = st.text_area(
+    "📝 描述你的需求",
+    height=100,
+    placeholder="示例（销售模式）：我销售AI客服系统，目标客户是电商和零售公司，有客服团队，最近有融资或扩张计划。",
+    key="main_input",
+    value=st.session_state.main_input
+)
     
     if st.button("🔍 开始搜索", use_container_width=True, type="primary"):
         if not need_description:
