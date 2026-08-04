@@ -19,19 +19,13 @@ st.set_page_config(
 )
 
 # ============================================================
-# ===== 自定义CSS =====
+# ===== 自定义CSS（省略，和之前一样） =====
 # ============================================================
 st.markdown("""
 <style>
-    * {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    .stApp {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e8edf5 100%);
-    }
-    .main {
-        padding: 0 1.5rem;
-    }
+    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .stApp { background: linear-gradient(135deg, #f5f7fa 0%, #e8edf5 100%); }
+    .main { padding: 0 1.5rem; }
     .navbar {
         background: rgba(255,255,255,0.85);
         backdrop-filter: blur(20px);
@@ -44,298 +38,127 @@ st.markdown("""
         flex-wrap: wrap;
         gap: 12px;
     }
-    .nav-brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
+    .nav-brand { display: flex; align-items: center; gap: 12px; }
     .nav-logo {
-        width: 40px;
-        height: 40px;
+        width: 40px; height: 40px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        font-weight: 700;
-        color: white;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; font-weight: 700; color: white;
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
     }
     .nav-title {
-        font-size: 22px;
-        font-weight: 800;
+        font-size: 22px; font-weight: 800;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         letter-spacing: -0.5px;
     }
-    .nav-sub {
-        font-size: 13px;
-        font-weight: 400;
-        color: #7c8ba0;
-        -webkit-text-fill-color: #7c8ba0;
-        margin-left: 4px;
-    }
+    .nav-sub { font-size: 13px; font-weight: 400; color: #7c8ba0; -webkit-text-fill-color: #7c8ba0; margin-left: 4px; }
     .nav-badge {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-size: 10px;
-        font-weight: 600;
-        padding: 2px 10px;
-        border-radius: 20px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
+        color: white; font-size: 10px; font-weight: 600;
+        padding: 2px 10px; border-radius: 20px;
+        letter-spacing: 0.5px; text-transform: uppercase;
     }
     .hero {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 28px 36px;
-        margin-bottom: 24px;
-        color: white;
-        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.30);
-        position: relative;
-        overflow: hidden;
+        border-radius: 20px; padding: 28px 36px; margin-bottom: 24px;
+        color: white; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.30);
+        position: relative; overflow: hidden;
     }
     .hero::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 400px;
-        height: 400px;
-        background: rgba(255,255,255,0.08);
-        border-radius: 50%;
+        content: ''; position: absolute; top: -50%; right: -20%;
+        width: 400px; height: 400px; background: rgba(255,255,255,0.08); border-radius: 50%;
     }
     .hero::after {
-        content: '';
-        position: absolute;
-        bottom: -40%;
-        left: -10%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255,255,255,0.05);
-        border-radius: 50%;
+        content: ''; position: absolute; bottom: -40%; left: -10%;
+        width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%;
     }
-    .hero-content {
-        position: relative;
-        z-index: 1;
-    }
-    .hero-title {
-        font-size: 26px;
-        font-weight: 800;
-        margin: 0;
-        letter-spacing: -0.5px;
-    }
-    .hero-desc {
-        font-size: 15px;
-        opacity: 0.9;
-        margin: 6px 0 0 0;
-        font-weight: 400;
-    }
-    .hero-tags {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-        flex-wrap: wrap;
-    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero-title { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+    .hero-desc { font-size: 15px; opacity: 0.9; margin: 6px 0 0 0; font-weight: 400; }
+    .hero-tags { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
     .hero-tag {
-        background: rgba(255,255,255,0.20);
-        backdrop-filter: blur(10px);
-        padding: 4px 14px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        border: 1px solid rgba(255,255,255,0.15);
+        background: rgba(255,255,255,0.20); backdrop-filter: blur(10px);
+        padding: 4px 14px; border-radius: 20px; font-size: 12px;
+        font-weight: 500; border: 1px solid rgba(255,255,255,0.15);
     }
     .card-glass {
-        background: rgba(255,255,255,0.75);
-        backdrop-filter: blur(12px);
-        border-radius: 16px;
-        padding: 20px 24px;
+        background: rgba(255,255,255,0.75); backdrop-filter: blur(12px);
+        border-radius: 16px; padding: 20px 24px;
         border: 1px solid rgba(255,255,255,0.5);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 16px;
         transition: all 0.3s ease;
     }
-    .card-glass:hover {
-        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-        border-color: rgba(102, 126, 234, 0.2);
-    }
-    .card-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #1a2332;
-        margin-bottom: 6px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .stat-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 14px;
-        margin: 14px 0;
-    }
+    .card-glass:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); border-color: rgba(102, 126, 234, 0.2); }
+    .card-title { font-size: 16px; font-weight: 600; color: #1a2332; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin: 14px 0; }
     .stat-item-glass {
-        background: rgba(255,255,255,0.6);
-        backdrop-filter: blur(8px);
-        border-radius: 14px;
-        padding: 16px 18px;
-        text-align: center;
-        border: 1px solid rgba(255,255,255,0.5);
-        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.6); backdrop-filter: blur(8px);
+        border-radius: 14px; padding: 16px 18px; text-align: center;
+        border: 1px solid rgba(255,255,255,0.5); transition: all 0.3s ease;
     }
-    .stat-item-glass:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-    }
+    .stat-item-glass:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
     .stat-number {
-        font-size: 28px;
-        font-weight: 800;
+        font-size: 28px; font-weight: 800;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         line-height: 1.2;
     }
-    .stat-label {
-        font-size: 13px;
-        color: #7c8ba0;
-        margin-top: 4px;
-        font-weight: 500;
-    }
+    .stat-label { font-size: 13px; color: #7c8ba0; margin-top: 4px; font-weight: 500; }
     .company-card-glass {
-        background: rgba(255,255,255,0.8);
-        backdrop-filter: blur(12px);
-        border-radius: 14px;
-        padding: 16px 20px;
-        margin-bottom: 10px;
-        border: 1px solid rgba(255,255,255,0.5);
-        transition: all 0.3s ease;
-        cursor: default;
+        background: rgba(255,255,255,0.8); backdrop-filter: blur(12px);
+        border-radius: 14px; padding: 16px 20px; margin-bottom: 10px;
+        border: 1px solid rgba(255,255,255,0.5); transition: all 0.3s ease; cursor: default;
     }
-    .company-card-glass:hover {
-        border-color: #667eea;
-        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.12);
-        transform: translateX(4px);
-    }
-    .company-name {
-        font-size: 17px;
-        font-weight: 700;
-        color: #1a2332;
-    }
+    .company-card-glass:hover { border-color: #667eea; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.12); transform: translateX(4px); }
+    .company-name { font-size: 17px; font-weight: 700; color: #1a2332; }
     .company-score {
-        font-size: 24px;
-        font-weight: 800;
+        font-size: 24px; font-weight: 800;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .priority-badge {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 3px 14px;
-        border-radius: 20px;
-        display: inline-block;
-        letter-spacing: 0.3px;
-    }
-    .priority-high {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
-    .priority-mid {
-        background: #fff3e0;
-        color: #e65100;
-    }
-    .priority-low {
-        background: #fbe9e7;
-        color: #c62828;
-    }
+    .priority-badge { font-size: 11px; font-weight: 600; padding: 3px 14px; border-radius: 20px; display: inline-block; letter-spacing: 0.3px; }
+    .priority-high { background: #e8f5e9; color: #2e7d32; }
+    .priority-mid { background: #fff3e0; color: #e65100; }
+    .priority-low { background: #fbe9e7; color: #c62828; }
     .tag-glass {
-        display: inline-block;
-        font-size: 12px;
-        font-weight: 500;
-        padding: 2px 12px;
-        border-radius: 12px;
-        margin: 2px 4px 2px 0;
-        background: rgba(102, 126, 234, 0.10);
-        color: #667eea;
+        display: inline-block; font-size: 12px; font-weight: 500;
+        padding: 2px 12px; border-radius: 12px; margin: 2px 4px 2px 0;
+        background: rgba(102, 126, 234, 0.10); color: #667eea;
         border: 1px solid rgba(102, 126, 234, 0.08);
     }
-    .stButton > button {
-        border-radius: 10px !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
-        border: none !important;
-    }
+    .stButton > button { border-radius: 10px !important; font-weight: 600 !important; transition: all 0.3s ease !important; border: none !important; }
     .stButton > button[kind="primary"] {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
-        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.30) !important;
+        color: white !important; box-shadow: 0 4px 16px rgba(102, 126, 234, 0.30) !important;
     }
-    .stButton > button[kind="primary"]:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 28px rgba(102, 126, 234, 0.40) !important;
-    }
+    .stButton > button[kind="primary"]:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 28px rgba(102, 126, 234, 0.40) !important; }
     .stTabs [data-baseweb="tab-list"] {
-        gap: 6px;
-        background: rgba(255,255,255,0.5);
-        backdrop-filter: blur(8px);
-        border-radius: 14px;
-        padding: 4px;
-        border: 1px solid rgba(255,255,255,0.3);
+        gap: 6px; background: rgba(255,255,255,0.5); backdrop-filter: blur(8px);
+        border-radius: 14px; padding: 4px; border: 1px solid rgba(255,255,255,0.3);
     }
     .stTabs [data-baseweb="tab"] {
-        border-radius: 10px !important;
-        padding: 8px 22px !important;
-        font-weight: 500 !important;
-        color: #7c8ba0 !important;
-        transition: all 0.3s ease !important;
-        cursor: pointer !important;
+        border-radius: 10px !important; padding: 8px 22px !important;
+        font-weight: 500 !important; color: #7c8ba0 !important;
+        transition: all 0.3s ease !important; cursor: pointer !important;
     }
-    .stTabs [aria-selected="true"] {
-        background: white !important;
-        color: #667eea !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    .stTabs [aria-selected="true"] { background: white !important; color: #667eea !important; box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important; }
+    .stTextInput > div > div > input, .stTextArea > div > div > textarea {
+        border-radius: 10px !important; border: 1px solid #e8ecf0 !important;
+        transition: all 0.3s ease !important; background: rgba(255,255,255,0.7) !important;
     }
-    .stTextInput > div > div > input,
-    .stTextArea > div > div > textarea {
-        border-radius: 10px !important;
-        border: 1px solid #e8ecf0 !important;
-        transition: all 0.3s ease !important;
-        background: rgba(255,255,255,0.7) !important;
-    }
-    .stTextInput > div > div > input:focus,
-    .stTextArea > div > div > textarea:focus {
-        border-color: #667eea !important;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) !important;
-        background: white !important;
+    .stTextInput > div > div > input:focus, .stTextArea > div > div > textarea:focus {
+        border-color: #667eea !important; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) !important; background: white !important;
     }
     .legal-footer {
-        background: rgba(255,255,255,0.6);
-        backdrop-filter: blur(8px);
-        border-radius: 16px;
-        padding: 20px 24px 16px 24px;
-        margin-top: 32px;
-        border: 1px solid rgba(255,255,255,0.3);
-        font-size: 12px;
-        color: #9aa0a6;
-        line-height: 1.8;
+        background: rgba(255,255,255,0.6); backdrop-filter: blur(8px);
+        border-radius: 16px; padding: 20px 24px 16px 24px; margin-top: 32px;
+        border: 1px solid rgba(255,255,255,0.3); font-size: 12px; color: #9aa0a6; line-height: 1.8;
     }
-    .legal-footer strong {
-        color: #7c8ba0;
-        font-weight: 600;
-    }
-    .legal-footer a {
-        color: #667eea;
-        text-decoration: none;
-    }
-    .legal-footer a:hover {
-        text-decoration: underline;
-    }
+    .legal-footer strong { color: #7c8ba0; font-weight: 600; }
+    .legal-footer a { color: #667eea; text-decoration: none; }
+    .legal-footer a:hover { text-decoration: underline; }
     @media (max-width: 768px) {
         .navbar { padding: 10px 16px; flex-direction: column; align-items: flex-start; }
         .hero { padding: 20px 18px; }
@@ -422,7 +245,6 @@ def extract_company_name(title, snippet):
 # ===== 搜索（通过 SerpApi 百度引擎） =====
 # ============================================================
 def search_from_serpapi(search_terms, industry, limit=10):
-    """通过 SerpApi 调用百度搜索"""
     all_companies = []
     seen_names = set()
     
@@ -484,7 +306,6 @@ def search_from_serpapi(search_terms, industry, limit=10):
 # ===== 获取公司详情（通过 SerpApi 百度引擎） =====
 # ============================================================
 def get_company_details(company_name, mode="销售"):
-    """通过 SerpApi 百度搜索获取公司详情"""
     details = {"name": company_name, "description": "", "financing": "暂无公开融资信息", "news": [], "jobs": [], "founder": "", "founded": ""}
     
     try:
@@ -684,7 +505,6 @@ def run_monitor(monitor_config):
 # ===== 主界面 =====
 # ============================================================
 
-# ===== 初始化 session_state =====
 if 'main_input' not in st.session_state:
     st.session_state.main_input = ""
 
@@ -857,17 +677,15 @@ with tab_main:
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    # 修复一键填入：直接用 st.session_state
                     if st.button("📥 一键填入输入框", key="fill_need_btn", use_container_width=True):
+                        # 直接写入 session_state
                         st.session_state.main_input = generated_text
+                        st.session_state.fill_done = True
                         
                 except Exception as e:
                     st.error(f"生成失败: {str(e)}")
     
     # ===== 需求输入框 =====
-    if 'main_input' not in st.session_state:
-        st.session_state.main_input = ""
-    
     need_description = st.text_area(
         "📝 描述你的需求",
         height=100,
@@ -876,9 +694,10 @@ with tab_main:
         value=st.session_state.main_input
     )
     
-    # 如果输入框有内容，显示提示
-    if st.session_state.main_input:
-        st.success("✅ 已填入需求描述")
+    # 显示填入成功提示
+    if st.session_state.get('fill_done', False):
+        st.success("✅ 已填入输入框！")
+        st.session_state.fill_done = False
     
     if st.button("🔍 开始搜索", use_container_width=True, type="primary"):
         if not need_description:
@@ -934,6 +753,39 @@ with tab_main:
                 
                 csv = result_df.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 下载结果 (CSV)", data=csv, file_name=f"觅镜_发现结果_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv", use_container_width=True)
+
+# ============================================================
+# TAB 2: 企业深度分析
+# ============================================================
+with tab_company:
+    st.markdown("""
+    <div class="card-glass">
+        <div class="card-title">🏢 企业深度分析</div>
+        <p style="color:#7c8ba0;margin:0;">输入企业名称，AI 自动分析其运营方向、合作机会和人才需求</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    company_input = st.text_input(
+        "企业名称",
+        placeholder="例如：字节跳动、宁德时代、比亚迪、深信服",
+        key="company_input"
+    )
+    
+    if st.button("📊 开始分析", use_container_width=True, type="primary"):
+        if not company_input:
+            st.error("⚠️ 请输入企业名称")
+        else:
+            with st.spinner(f"🔍 正在深度分析 {company_input}..."):
+                result = analyze_company(company_input)
+                st.markdown("---")
+                st.markdown(f"### 🏢 {company_input} 深度分析报告")
+                st.markdown("---")
+                st.markdown(result)
+                st.markdown("---")
+                st.caption("📌 基于公开信息 · 仅供参考 · 数据来源：SerpApi百度搜索")
+                
+                report = f"===== 觅镜 · {company_input} 深度分析报告 =====\n生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n{result}\n\n===== 数据来源 =====\nSerpApi百度搜索"
+                st.download_button("📥 下载报告 (TXT)", data=report.encode('utf-8'), file_name=f"{company_input}_分析报告.txt", mime="text/plain", use_container_width=True)
 
 # ============================================================
 # TAB 3: 持续监控
