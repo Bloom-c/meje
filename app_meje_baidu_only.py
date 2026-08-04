@@ -876,9 +876,10 @@ with tab_main:
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    if st.button("📥 一键填入输入框", key="fill_need_btn", use_container_width=True):
-                        st.session_state.main_input = generated_text
-                        st.rerun()
+                   if st.button("📥 一键填入输入框", key="fill_need_btn", use_container_width=True):
+    st.session_state.main_input = generated_text
+    st.session_state.need_filled = True
+    st.rerun()
                         
                 except Exception as e:
                     st.error(f"生成失败: {str(e)}")
