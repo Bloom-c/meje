@@ -857,14 +857,17 @@ with tab_main:
                     </div>
                     """, unsafe_allow_html=True)
                     
+                    # 修复一键填入：直接用 st.session_state
                     if st.button("📥 一键填入输入框", key="fill_need_btn", use_container_width=True):
                         st.session_state.main_input = generated_text
-                        st.rerun()
                         
                 except Exception as e:
                     st.error(f"生成失败: {str(e)}")
     
     # ===== 需求输入框 =====
+    if 'main_input' not in st.session_state:
+        st.session_state.main_input = ""
+    
     need_description = st.text_area(
         "📝 描述你的需求",
         height=100,
@@ -872,6 +875,10 @@ with tab_main:
         key="main_input",
         value=st.session_state.main_input
     )
+    
+    # 如果输入框有内容，显示提示
+    if st.session_state.main_input:
+        st.success("✅ 已填入需求描述")
     
     if st.button("🔍 开始搜索", use_container_width=True, type="primary"):
         if not need_description:
