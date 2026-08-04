@@ -19,7 +19,7 @@ st.set_page_config(
 )
 
 # ============================================================
-# ===== 自定义CSS（保持不变） =====
+# ===== 自定义CSS =====
 # ============================================================
 st.markdown("""
 <style>
@@ -352,7 +352,7 @@ st.markdown("""
 import os
 
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-BAIDU_API_KEY = os.getenv("BAIDU_API_KEY")
+SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 
 client = OpenAI(
     api_key=DEEPSEEK_API_KEY,
@@ -419,9 +419,10 @@ def extract_company_name(title, snippet):
     return None
 
 # ============================================================
-# ===== 百度搜索API =====
+# ===== 搜索（通过 SerpApi 百度引擎） =====
 # ============================================================
-def search_from_baidu(search_terms, industry, limit=10):
+def search_from_serpapi(search_terms, industry, limit=10):
+    """通过 SerpApi 调用百度搜索"""
     all_companies = []
     seen_names = set()
     
@@ -435,26 +436,22 @@ def search_from_baidu(search_terms, industry, limit=10):
     
     for search_term in expanded_terms:
         try:
-            url = "https://qianfan.baidu.com/v2/ai_search/web_search"
-            headers = {
-                "Authorization": f"Bearer {BAIDU_API_KEY}",
-                "Content-Type": "application/json"
-            }
-            data = {
-                "messages": [{"role": "user", "content": search_term}],
-                "search_source": "baidu_search_v2",
+            url = "https://serpapi.com/search"
+            params = {
+                "q": search_term,
+                "api_key": SERPAPI_KEY,
+                "source": "baidu",
                 "num": limit
             }
             
-            response = requests.post(url, headers=headers, json=data, timeout=30)
+            response = requests.get(url, params=params, timeout=30)
             
             if response.status_code == 200:
                 result = response.json()
-                web_pages = result.get("web_pages", []) or result.get("search_results", [])
-                for item in web_pages:
+                for item in result.get("organic_results", []):
                     title = item.get("title", "")
-                    snippet = item.get("body", "") or item.get("snippet", "")
-                    link = item.get("url", "") or item.get("link", "")
+                    snippet = item.get("snippet", "")
+                    link = item.get("link", "")
                     
                     name = extract_company_name(title, snippet)
                     if name and 2 < len(name) < 50:
@@ -473,10 +470,10 @@ def search_from_baidu(search_terms, industry, limit=10):
                                 "source": "百度搜索"
                             })
             else:
-                st.warning(f"百度搜索API调用失败 ({response.status_code})")
+                st.warning(f"SerpApi百度搜索失败: {response.status_code}")
                 
         except Exception as e:
-            st.error(f"百度搜索API异常: {str(e)}")
+            st.error(f"搜索异常: {str(e)}")
             continue
         
         time.sleep(0.3)
@@ -484,33 +481,29 @@ def search_from_baidu(search_terms, industry, limit=10):
     return all_companies
 
 # ============================================================
-# ===== 获取公司详情 =====
+# ===== 获取公司详情（通过 SerpApi 百度引擎） =====
 # ============================================================
 def get_company_details(company_name, mode="销售"):
+    """通过 SerpApi 百度搜索获取公司详情"""
     details = {"name": company_name, "description": "", "financing": "暂无公开融资信息", "news": [], "jobs": [], "founder": "", "founded": ""}
     
     try:
-        url = "https://qianfan.baidu.com/v2/ai_search/web_search"
-        headers = {
-            "Authorization": f"Bearer {BAIDU_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "messages": [{"role": "user", "content": f"{company_name} 公司 简介 融资 招聘 创始人"}],
-            "search_source": "baidu_search_v2",
+        url = "https://serpapi.com/search"
+        params = {
+            "q": f"{company_name} 公司 简介 融资 招聘 创始人",
+            "api_key": SERPAPI_KEY,
+            "source": "baidu",
             "num": 15
         }
         
-        response = requests.post(url, headers=headers, json=data, timeout=30)
+        response = requests.get(url, params=params, timeout=30)
         
         if response.status_code == 200:
             result = response.json()
-            web_pages = result.get("web_pages", []) or result.get("search_results", [])
-            
-            for item in web_pages:
+            for item in result.get("organic_results", []):
                 title = item.get("title", "")
-                snippet = item.get("body", "") or item.get("snippet", "")
-                link = item.get("url", "") or item.get("link", "")
+                snippet = item.get("snippet", "")
+                link = item.get("link", "")
                 
                 if "百科" in title or "baike" in link:
                     details["description"] = snippet[:500]
@@ -553,16 +546,16 @@ def score_company(company_name, need_analysis, company_details, mode="销售"):
 # ===== 搜索主函数 =====
 # ============================================================
 def search_companies(search_terms, industry, keywords, limit=10):
-    all_companies = search_from_baidu(search_terms, industry, limit)
+    all_companies = search_from_serpapi(search_terms, industry, limit)
     
     if keywords:
         for kw in keywords[:2]:
-            extra_results = search_from_baidu([f"{kw} 招聘"], industry, limit//2)
+            extra_results = search_from_serpapi([f"{kw} 招聘"], industry, limit//2)
             for comp in extra_results:
                 if comp['name'] not in [c['name'] for c in all_companies]:
                     all_companies.append(comp)
             
-            fin_results = search_from_baidu([f"{kw} 融资"], industry, limit//2)
+            fin_results = search_from_serpapi([f"{kw} 融资"], industry, limit//2)
             for comp in fin_results:
                 if comp['name'] not in [c['name'] for c in all_companies]:
                     all_companies.append(comp)
@@ -578,7 +571,7 @@ def quick_search(need_description, mode="销售"):
     if not need_data.get('search_terms'):
         need_data['search_terms'] = [f"{need_data.get('industry', '科技')} 公司"]
     
-    status.write("📡 百度搜索中...")
+    status.write("📡 SerpApi百度搜索中...")
     companies = search_companies(need_data.get('search_terms', []), need_data.get('industry', '科技'), need_data.get('keywords', []), 10)
     
     if not companies:
@@ -702,7 +695,7 @@ st.markdown("""
         <span class="nav-badge">v3.0</span>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <span style="font-size:13px;color:#7c8ba0;font-weight:500;">🔍 百度搜索</span>
+        <span style="font-size:13px;color:#7c8ba0;font-weight:500;">🔍 SerpApi百度搜索</span>
         <span style="font-size:13px;color:#7c8ba0;font-weight:500;">💼 招聘</span>
         <span style="font-size:13px;color:#7c8ba0;font-weight:500;">💰 融资</span>
     </div>
@@ -862,6 +855,7 @@ with tab_main:
                     
                     if st.button("📥 一键填入输入框", key="fill_need_btn", use_container_width=True):
                         st.session_state.main_input = generated_text
+                        st.success("✅ 已填入输入框，请查看上方「描述你的需求」区域")
                         
                 except Exception as e:
                     st.error(f"生成失败: {str(e)}")
@@ -961,9 +955,9 @@ with tab_company:
                 st.markdown("---")
                 st.markdown(result)
                 st.markdown("---")
-                st.caption("📌 基于公开信息 · 仅供参考 · 数据来源：百度搜索")
+                st.caption("📌 基于公开信息 · 仅供参考 · 数据来源：SerpApi百度搜索")
                 
-                report = f"===== 觅镜 · {company_input} 深度分析报告 =====\n生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n{result}\n\n===== 数据来源 =====\n百度搜索公开信息"
+                report = f"===== 觅镜 · {company_input} 深度分析报告 =====\n生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n{result}\n\n===== 数据来源 =====\nSerpApi百度搜索"
                 st.download_button("📥 下载报告 (TXT)", data=report.encode('utf-8'), file_name=f"{company_input}_分析报告.txt", mime="text/plain", use_container_width=True)
 
 # ============================================================
@@ -1034,7 +1028,7 @@ st.sidebar.markdown("""
 - **📡 持续监控**：自动追踪融资、招聘、新闻信号
 
 ### 🔌 数据源
-- 🔍 百度搜索
+- 🔍 SerpApi 百度搜索
 - 💼 百度招聘
 - 💰 百度融资新闻
 
@@ -1055,11 +1049,11 @@ st.markdown("""
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
         <div>
             <strong>📌 免责声明</strong><br>
-            觅镜（Meje）提供的信息均来源于百度搜索等公开渠道，仅作为参考信息使用，不构成任何形式的投资建议、合作建议或雇佣建议。用户应自行核实信息的准确性和时效性，并承担据此做出决策的全部风险。
+            觅镜（Meje）提供的信息均来源于 SerpApi 百度搜索等公开渠道，仅作为参考信息使用，不构成任何形式的投资建议、合作建议或雇佣建议。用户应自行核实信息的准确性和时效性，并承担据此做出决策的全部风险。
         </div>
         <div>
             <strong>📡 数据来源</strong><br>
-            本平台通过百度搜索API获取公开信息，包括但不限于企业简介、融资新闻、招聘信息等。所有数据均为公开网络信息，觅镜不对数据的真实性、完整性承担法律责任。
+            本平台通过 SerpApi 获取百度搜索的公开信息，包括但不限于企业简介、融资新闻、招聘信息等。所有数据均为公开网络信息，觅镜不对数据的真实性、完整性承担法律责任。
         </div>
         <div>
             <strong>🔒 隐私与合规</strong><br>
@@ -1079,7 +1073,7 @@ st.markdown("""
         </div>
     </div>
     <div style="text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.05);font-size:11px;color:#b0b8c0;">
-        觅镜 Meje v3.0 · 基于公开信息 · 数据来源：百度搜索 · 仅供调研参考
+        觅镜 Meje v3.0 · 基于公开信息 · 数据来源：SerpApi百度搜索 · 仅供调研参考
     </div>
 </div>
 """, unsafe_allow_html=True)
