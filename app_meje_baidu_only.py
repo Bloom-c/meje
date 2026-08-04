@@ -463,9 +463,9 @@ with tab_main:
     mode_key = st.session_state.mode_selected
     st.markdown(f'<div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:10px 20px;border-radius:10px;text-align:center;font-weight:600;margin:8px 0 12px 0;">✅ 当前模式：{"💼 销售" if mode_key == "销售" else "🎓 求职"}</div>', unsafe_allow_html=True)
     
-    # ---------- AI 写需求 ----------
+    # ===== AI 帮你写需求 =====
     with st.expander("🤖 AI 帮我写需求描述", expanded=False):
-        st.markdown("💡 简单描述你的业务，AI 自动生成完整需求描述")
+        st.caption("💡 填写信息后点击生成，AI 会自动生成需求描述，然后点击「填入输入框」")
         
         if mode_key == "销售":
             col_a, col_b = st.columns(2)
@@ -486,15 +486,16 @@ with tab_main:
                 job_level = st.text_input("目标职级", placeholder="中级", key="j4")
             extra = st.text_area("补充信息", placeholder="希望公司已盈利", key="j5", height=40)
         
+        # 生成按钮
         if st.button("🚀 生成需求描述", use_container_width=True, key="gen_btn"):
             if mode_key == "销售":
                 info = f"产品：{product or '未填写'}\n行业：{target_industry or '未填写'}\n规模：{target_size or '未填写'}\n痛点：{pain_point or '未填写'}\n补充：{extra or '无'}"
-                prompt_text = f"你是商业需求分析师。生成一段专业完整的需求描述（200字左右）。用户信息：\n{info}"
+                prompt_text = f"你是商业需求分析师。生成一段专业完整的需求描述（150-200字）。用户信息：\n{info}\n要求：直接输出描述，不要有其他内容。"
             else:
                 info = f"技能：{skill or '未填写'}\n技术栈：{tech_stack or '未填写'}\n目标行业：{target_industry_job or '未填写'}\n职级：{job_level or '未填写'}\n补充：{extra or '无'}"
-                prompt_text = f"你是职业规划师。生成一段专业完整的求职需求描述（200字左右）。用户信息：\n{info}"
+                prompt_text = f"你是职业规划师。生成一段专业完整的求职需求描述（150-200字）。用户信息：\n{info}\n要求：直接输出描述，不要有其他内容。"
             
-            with st.spinner("生成中..."):
+            with st.spinner("🤖 AI 生成中..."):
                 try:
                     resp = client.chat.completions.create(
                         model="deepseek-chat",
@@ -502,26 +503,30 @@ with tab_main:
                         temperature=0.7,
                         max_tokens=800
                     )
-                    generated = resp.choices[0].message.content
-                    st.session_state.need_text = generated
-                    st.success("✅ 已生成！点击下方「一键填入」按钮使用")
-                    st.markdown(f'<div style="background:white;border:2px solid #667eea;border-radius:10px;padding:16px;margin:8px 0;">{generated}</div>', unsafe_allow_html=True)
+                    generated_text = resp.choices[0].message.content
+                    
+                    # 存储到 session_state
+                    st.session_state.generated_need = generated_text
+                    
+                    st.markdown("##### ✅ 生成结果：")
+                    st.info(generated_text)
+                    
+                    # 填入按钮 - 直接写入 st.session_state.need_input
+                    if st.button("📥 填入输入框", use_container_width=True, key="fill_btn"):
+                        st.session_state.need_input = generated_text
+                        st.success("✅ 已填入输入框！请查看下方输入框")
+                        
                 except Exception as e:
                     st.error(f"生成失败: {str(e)}")
-        
-        if st.button("📥 一键填入输入框", use_container_width=True, key="fill_btn"):
-            if st.session_state.need_text:
-                st.success("✅ 已填入！请查看下方输入框")
-            else:
-                st.warning("请先生成需求描述")
     
-    # ---------- 需求输入框 ----------
-    need_description = st.text_area(
+    # ===== 需求输入框 =====
+    if 'need_input' not in st.session_state:
+        st.session_state.need_input = ""
+    
+    need_description = st.text_input(
         "📝 描述你的需求",
-        height=120,
         placeholder="示例：我销售AI客服系统，目标客户是电商和零售公司，有客服团队，最近有融资或扩张计划。",
-        key="need_input",
-        value=st.session_state.need_text
+        key="need_input"
     )
     
     if st.button("🔍 开始搜索", use_container_width=True, type="primary"):
@@ -531,15 +536,22 @@ with tab_main:
             result_df = quick_search(need_description, mode_key)
             if not result_df.empty:
                 result_df = result_df.sort_values("综合评分", ascending=False)
-                st.markdown(f"### 📊 搜索结果 · 共 {len(result_df)} 家公司")
-                st.markdown(f"""
-                <div class="stat-grid">
-                    <div class="stat-item"><div class="stat-number">{len(result_df)}</div><div class="stat-label">公司总数</div></div>
-                    <div class="stat-item"><div class="stat-number">{len(result_df[result_df['优先级'].str.contains('高')])}</div><div class="stat-label">🔥 高优先级</div></div>
-                    <div class="stat-item"><div class="stat-number">{int(result_df['综合评分'].mean())}</div><div class="stat-label">平均评分</div></div>
-                    <div class="stat-item"><div class="stat-number">{len(result_df['数据来源'].unique())}</div><div class="stat-label">数据源</div></div>
-                </div>
-                """, unsafe_allow_html=True)
+                
+                st.markdown("---")
+                st.markdown(f"##### 📊 搜索结果 · 共 {len(result_df)} 家公司")
+                
+                # 统计
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("🏢 公司总数", len(result_df))
+                with col2:
+                    st.metric("🔥 高优先级", len(result_df[result_df['优先级'].str.contains('高')]))
+                with col3:
+                    st.metric("📊 平均评分", int(result_df['综合评分'].mean()))
+                with col4:
+                    st.metric("📡 数据源", len(result_df['数据来源'].unique()))
+                
+                st.markdown("---")
                 
                 for _, row in result_df.iterrows():
                     score = row['综合评分']
@@ -554,8 +566,8 @@ with tab_main:
                             <div><span style="font-size:24px;font-weight:700;color:#667eea;">{score}</span></div>
                         </div>
                         <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
-                            <span class="tag">匹配度: {row.get('匹配度', 'N/A')}</span>
-                            <span class="tag">{row.get('数据来源', '')}</span>
+                            <span class="tag">🎯 匹配度: {row.get('匹配度', 'N/A')}</span>
+                            <span class="tag">📡 {row.get('数据来源', '')}</span>
                             {f'<span class="tag">👤 {row["创始人"]}</span>' if row.get('创始人') else ''}
                             {f'<span class="tag">📅 {row["成立时间"]}</span>' if row.get('成立时间') else ''}
                             {f'<span class="tag">💼 {row["招聘数"]}个岗位</span>' if row.get('招聘数', 0) > 0 else ''}
@@ -567,7 +579,6 @@ with tab_main:
                 
                 csv = result_df.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 下载结果 (CSV)", data=csv, file_name=f"觅镜_结果_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv", use_container_width=True)
-
 # ============================================================
 # TAB 2: 企业深度分析
 # ============================================================
