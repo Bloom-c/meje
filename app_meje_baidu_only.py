@@ -19,7 +19,7 @@ st.set_page_config(
 )
 
 # ============================================================
-# ===== 自定义CSS =====
+# ===== 自定义CSS（保持不变） =====
 # ============================================================
 st.markdown("""
 <style>
@@ -336,27 +336,12 @@ st.markdown("""
     .legal-footer a:hover {
         text-decoration: underline;
     }
-    .suggestion-item {
-        background: rgba(255,255,255,0.95);
-        border-radius: 10px;
-        padding: 10px 16px;
-        border: 1px solid #e8ecf0;
-        margin-bottom: 6px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .suggestion-item:hover {
-        border-color: #667eea;
-        box-shadow: 0 2px 12px rgba(102, 126, 234, 0.10);
-    }
     @media (max-width: 768px) {
         .navbar { padding: 10px 16px; flex-direction: column; align-items: flex-start; }
         .hero { padding: 20px 18px; }
         .hero-title { font-size: 20px; }
         .stat-grid { grid-template-columns: repeat(2, 1fr); }
         .company-card-glass { padding: 12px 14px; }
-        .suggestion-item { flex-direction: column; align-items: flex-start; gap: 8px; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -364,9 +349,10 @@ st.markdown("""
 # ============================================================
 # ===== 配置 =====
 # ============================================================
+import os
+
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 BAIDU_API_KEY = os.getenv("BAIDU_API_KEY")
-
 
 client = OpenAI(
     api_key=DEEPSEEK_API_KEY,
@@ -742,7 +728,7 @@ st.markdown("""
 tab_main, tab_company, tab_monitor = st.tabs(["🎯 发现引擎", "🏢 企业深度分析", "📡 持续监控"])
 
 # ============================================================
-# TAB 1: 发现引擎（带 AI 帮你写需求）
+# TAB 1: 发现引擎
 # ============================================================
 with tab_main:
     st.markdown("##### 选择使用场景")
@@ -775,43 +761,7 @@ with tab_main:
         </div>
         """, unsafe_allow_html=True)
     
-    # ============================================================
-    # ===== AI 帮你写需求功能 =====
-    # ============================================================
-   with tab_main:
-    st.markdown("##### 选择使用场景")
-    
-    if 'mode_selected' not in st.session_state:
-        st.session_state.mode_selected = "销售"
-    
-    col_mode1, col_mode2 = st.columns(2)
-    with col_mode1:
-        if st.button("💼 销售模式\n找潜在客户", use_container_width=True, key="mode_sales_card"):
-            st.session_state.mode_selected = "销售"
-            st.rerun()
-    with col_mode2:
-        if st.button("🎓 求职模式\n找理想雇主", use_container_width=True, key="mode_job_card"):
-            st.session_state.mode_selected = "求职"
-            st.rerun()
-    
-    mode_key = st.session_state.mode_selected
-    
-    if mode_key == "销售":
-        st.markdown("""
-        <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px 24px;border-radius:12px;font-weight:700;font-size:18px;text-align:center;box-shadow:0 4px 20px rgba(102,126,234,0.35);margin:8px 0 12px 0;">
-            ✅ 当前模式：💼 销售模式 — 正在寻找潜在客户
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px 24px;border-radius:12px;font-weight:700;font-size:18px;text-align:center;box-shadow:0 4px 20px rgba(102,126,234,0.35);margin:8px 0 12px 0;">
-            ✅ 当前模式：🎓 求职模式 — 正在寻找理想雇主
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # ============================================================
-    # ===== AI 帮你写需求功能 =====
-    # ============================================================
+    # ===== AI 帮你写需求 =====
     with st.expander("🤖 AI 帮我写需求描述", expanded=False):
         st.markdown("""
         <div style="background: #f0f4ff; padding: 12px 16px; border-radius: 10px; margin-bottom: 12px; font-size: 14px; color: #1a2332;">
@@ -982,6 +932,7 @@ with tab_main:
                 
                 csv = result_df.to_csv(index=False).encode('utf-8-sig')
                 st.download_button("📥 下载结果 (CSV)", data=csv, file_name=f"觅镜_发现结果_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv", use_container_width=True)
+
 # ============================================================
 # TAB 2: 企业深度分析
 # ============================================================
